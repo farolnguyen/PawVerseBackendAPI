@@ -1,0 +1,10 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Không commit appsettings có secret
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
