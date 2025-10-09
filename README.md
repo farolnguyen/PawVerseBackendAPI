@@ -20,25 +20,20 @@ Mỗi phương pháp đều có **luồng Admin** (chuẩn bị dữ liệu/kho 
 ### PA1 — YOLOv11 + CLIP + FAISS
 ```mermaid
 flowchart LR
-  classDef db fill:#eef,stroke:#669;
-  classDef warn fill:#ffe5b4,stroke:#c90;
-
-  subgraph ADMIN[Admin - Chuẩn bị kho mẫu]
-    A1[(Ảnh theo thư mục giống)]:::db --> A2[YOLOv11 detect + crop\n(dog/cat)]
-    A2 --> A3[CLIP Embed (OpenCLIP ViT-B/32)\n→ vector 512D]
-    A3 --> A4[(FAISS Index: dogs.index / cats.index)]:::db
-    A4 --> A5[(Mapping faiss_id → breed_id → breed_name)]:::db
+  subgraph ADMIN [Admin - Chuan bi kho mau]
+    A1([Anh theo thu muc giong]) --> A2[YOLOv11 detect + crop (dog/cat)]
+    A2 --> A3[CLIP embed 512D]
+    A3 --> A4[(FAISS index: dogs.index / cats.index)]
+    A4 --> A5[(Mapping: faiss_id -> breed_id -> breed_name)]
   end
 
-  subgraph USER[User - Truy vấn]
-    U1[Upload ảnh] --> U2[YOLOv11 detect + crop\n(dog/cat)]
-    U2 --> U3[CLIP Embed → vector 512D]
-    U3 --> U4{FAISS Top-k\n(đúng index theo loài)}
-    U4 --> U5[Quyết định: Top-1 + ngưỡng\nhoặc k-NN có trọng số]
-    U5 --> U6{{Trả kết quả: breed + confidence + top3}}
+  subgraph USER [User - Truy van]
+    U1[Upload anh] --> U2[YOLOv11 detect + crop (dog/cat)]
+    U2 --> U3[CLIP embed 512D]
+    U3 --> U4{FAISS Top-k}
+    U4 --> U5[Quyet dinh: Top-1 + nguong hoac voting]
+    U5 --> U6[Tra ket qua: breed + confidence + top3]
   end
-
-  A5 --- N1[[Lưu ý: L2-normalize vector; dùng IndexFlatIP cho cosine.]]:::warn
 ```
 
 **Điểm cần chốt thêm (nhỏ):**
@@ -52,31 +47,26 @@ flowchart LR
 ### PA-Alt — Segmentation-first, Part-aware + k-NN
 ```mermaid
 flowchart LR
-  classDef db fill:#eef,stroke:#669;
-  classDef warn fill:#ffe5b4,stroke:#c90;
-
-  subgraph ADMIN[Admin - Chuẩn bị kho mẫu]
-    B1[(Ảnh theo thư mục giống)]:::db --> B2[Segmentation (rembg / U2Net / GrabCut)\n→ mask]
-    B2 --> B3[Chia phần:\n- Đầu/mặt: 1/3 trên\n- Ngực: 1/3 giữa\n- Toàn thân: cả mask]
-    B3 --> B4[Đặc trưng:\n- Shape: Hu/Fourier/ratios\n- Texture: LBP + Gabor\n- Color: HSV hist]
-    B4 --> B5[Chuẩn hoá + Concat → vector]
-    B5 --> B6[(Index k-NN/FAISS + mapping)]:::db
+  subgraph ADMIN [Admin - Chuan bi kho mau]
+    B1([Anh theo thu muc giong]) --> B2[Segmentation (rembg / U2Net / GrabCut) -> mask]
+    B2 --> B3[Chia phan: dau 1/3 tren, nguc 1/3 giua, toan than = mask]
+    B3 --> B4[Dac trung: Shape (Hu/Fourier/ratios), Texture (LBP + Gabor), Color (HSV)]
+    B4 --> B5[Chuan hoa + Concat thanh vector]
+    B5 --> B6[(Index k-NN / FAISS + mapping)]
   end
 
-  subgraph USER[User - Truy vấn]
-    C1[Upload ảnh] --> C2[Segmentation → mask]
-    C2 --> C3{Mask xấu?}
-    C3 -- Có --> C4[YOLO detect (fallback)\n→ crop rồi segment lại]
-    C3 -- Không --> C5[Tiếp tục]
+  subgraph USER [User - Truy van]
+    C1[Upload anh] --> C2[Segmentation -> mask]
+    C2 --> C3{Mask xau?}
+    C3 -->|Co| C4[YOLO detect fallback -> crop -> segment lai]
+    C3 -->|Khong| C5[Bo qua]
     C4 --> C5
-    C5 --> C6[Chia phần + trích đặc trưng\n(Shape/LBP+Gabor/HSV)]
-    C6 --> C7[Chuẩn hoá + Concat → vector]
-    C7 --> C8{Tìm Top-k trong Index}
-    C8 --> C9[Vote theo giống với trọng số\nS = w1*s_shape + w2*s_tex + w3*s_color]
-    C9 --> C10{{Trả kết quả: breed + confidence + top3}}
+    C5 --> C6[Chia phan + tinh dac trung (Shape / LBP+Gabor / HSV)]
+    C6 --> C7[Chuan hoa + Concat thanh vector]
+    C7 --> C8{Tim Top-k trong index}
+    C8 --> C9[Vote theo giong voi trong so]
+    C9 --> C10[Tra ket qua: breed + confidence + top3]
   end
-
-  B6 --- N2[[Làm sạch mask (fill holes/morphology).\nChọn w, α bằng grid-search]]:::warn
 ```
 
 **Điểm cần chốt thêm (nhỏ):**
@@ -90,29 +80,24 @@ flowchart LR
 ### PA3 — Feature → PCA → Linear SVM (không retrieval)
 ```mermaid
 flowchart LR
-  classDef db fill:#eef,stroke:#669;
-  classDef warn fill:#ffe5b4,stroke:#c90;
-
-  subgraph ADMIN[Admin - Huấn luyện]
-    D1[(Ảnh theo thư mục giống)]:::db --> D2[detect/crop hoặc segmentation]
-    D2 --> D3[Trích đặc trưng:\n- Shape (Hu/Fourier/ratios)\n- Texture (LBP)\n- Color (HSV)]
-    D3 --> D4[Chuẩn hoá cục bộ + Concat → vector]
-    D4 --> D5[StandardScaler (toàn cục)]
-    D5 --> D6[PCA nén về 128–256D]
-    D6 --> D7[Train Linear SVM (One-vs-Rest)\nclass_weight='balanced']
-    D7 --> D8[(Lưu scaler.pkl, pca.pkl, svm.pkl, labels.pkl)]:::db
+  subgraph ADMIN [Admin - Huan luyen]
+    D1([Anh theo thu muc giong]) --> D2[Detect / crop hoac segmentation]
+    D2 --> D3[Trich dac trung: Shape + LBP + HSV]
+    D3 --> D4[Chuan hoa cuc bo + Concat]
+    D4 --> D5[StandardScaler (toan cuc)]
+    D5 --> D6[PCA nen ve 128-256 chieu]
+    D6 --> D7[Train Linear SVM (One-vs-Rest) class_weight=balanced]
+    D7 --> D8[(Luu scaler.pkl, pca.pkl, svm.pkl, labels.pkl)]
   end
 
-  subgraph USER[User - Suy luận]
-    E1[Upload ảnh] --> E2[detect/crop hoặc segmentation]
-    E2 --> E3[Trích đặc trưng (Shape/LBP/HSV) → Concat]
+  subgraph USER [User - Suy luan]
+    E1[Upload anh] --> E2[Detect / crop hoac segmentation]
+    E2 --> E3[Trich dac trung (Shape / LBP / HSV) -> Concat]
     E3 --> E4[StandardScaler.transform]
     E4 --> E5[PCA.transform]
     E5 --> E6[Linear SVM predict / predict_proba]
-    E6 --> E7{{Trả kết quả: Top-1 (nếu ≥ ngưỡng) hoặc Top-3}}
+    E6 --> E7[Tra ket qua: Top-1 neu >= nguong, hoac Top-3]
   end
-
-  D8 --- N3[[Có thể calibrate xác suất (Platt/Isotonic) để confidence mượt.]]:::warn
 ```
 
 **Điểm cần chốt thêm (nhỏ):**
