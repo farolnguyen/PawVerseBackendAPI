@@ -21,19 +21,31 @@ Mỗi phương pháp đều có **luồng Admin** (chuẩn bị dữ liệu/kho 
 ```mermaid
 flowchart LR
   subgraph ADMIN [Admin - Chuan bi kho mau]
-    A1([Anh theo thu muc giong]) --> A2[YOLOv11 detect + crop (dog/cat)]
-    A2 --> A3[CLIP embed 512D]
-    A3 --> A4[(FAISS index: dogs.index / cats.index)]
-    A4 --> A5[(Mapping: faiss_id -> breed_id -> breed_name)]
+    A1([Anh theo thu muc giong])
+    A2[YOLOv11 detect + crop (dog/cat)]
+    A3[CLIP embed 512D]
+    A4[(FAISS index dogs.index va cats.index)]
+    A5[(Mapping faiss_id to breed_id to breed_name)]
+    A1 --> A2
+    A2 --> A3
+    A3 --> A4
+    A4 --> A5
   end
 
   subgraph USER [User - Truy van]
-    U1[Upload anh] --> U2[YOLOv11 detect + crop (dog/cat)]
-    U2 --> U3[CLIP embed 512D]
-    U3 --> U4{FAISS Top-k}
-    U4 --> U5[Quyet dinh: Top-1 + nguong hoac voting]
-    U5 --> U6[Tra ket qua: breed + confidence + top3]
+    U1[Upload anh]
+    U2[YOLOv11 detect + crop (dog/cat)]
+    U3[CLIP embed 512D]
+    U4{FAISS Top k}
+    U5[Quyet dinh Top1 + nguong hoac voting]
+    U6[Tra ket qua breed confidence top3]
+    U1 --> U2
+    U2 --> U3
+    U3 --> U4
+    U4 --> U5
+    U5 --> U6
   end
+
 ```
 
 **Điểm cần chốt thêm (nhỏ):**
@@ -44,29 +56,44 @@ flowchart LR
 
 ---
 
-### PA-Alt — Segmentation-first, Part-aware + k-NN
+### PA-2 — Segmentation-first, Part-aware + k-NN
 ```mermaid
 flowchart LR
   subgraph ADMIN [Admin - Chuan bi kho mau]
-    B1([Anh theo thu muc giong]) --> B2[Segmentation (rembg / U2Net / GrabCut) -> mask]
-    B2 --> B3[Chia phan: dau 1/3 tren, nguc 1/3 giua, toan than = mask]
-    B3 --> B4[Dac trung: Shape (Hu/Fourier/ratios), Texture (LBP + Gabor), Color (HSV)]
-    B4 --> B5[Chuan hoa + Concat thanh vector]
-    B5 --> B6[(Index k-NN / FAISS + mapping)]
+    B1([Anh theo thu muc giong])
+    B2[Segmentation rembg hoac U2Net hoac GrabCut tao mask]
+    B3[Chia phan dau 1 phan 3 tren nguc 1 phan 3 giua toan than la mask]
+    B4[Dac trung Shape Hu Fourier ratios Texture LBP Gabor Color HSV]
+    B5[Chuan hoa va Concat thanh vector]
+    B6[(Index kNN hoac FAISS va mapping)]
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+    B4 --> B5
+    B5 --> B6
   end
 
   subgraph USER [User - Truy van]
-    C1[Upload anh] --> C2[Segmentation -> mask]
-    C2 --> C3{Mask xau?}
-    C3 -->|Co| C4[YOLO detect fallback -> crop -> segment lai]
-    C3 -->|Khong| C5[Bo qua]
+    C1[Upload anh]
+    C2[Segmentation tao mask]
+    C3{Mask xau?}
+    C4[YOLO detect fallback crop roi segment lai]
+    C5[Chia phan va tinh dac trung]
+    C6[Chuan hoa va Concat thanh vector]
+    C7{Tim Top k trong index}
+    C8[Vote theo giong voi trong so]
+    C9[Tra ket qua breed confidence top3]
+    C1 --> C2
+    C2 --> C3
+    C3 -- Co --> C4
+    C3 -- Khong --> C5
     C4 --> C5
-    C5 --> C6[Chia phan + tinh dac trung (Shape / LBP+Gabor / HSV)]
-    C6 --> C7[Chuan hoa + Concat thanh vector]
-    C7 --> C8{Tim Top-k trong index}
-    C8 --> C9[Vote theo giong voi trong so]
-    C9 --> C10[Tra ket qua: breed + confidence + top3]
+    C5 --> C6
+    C6 --> C7
+    C7 --> C8
+    C8 --> C9
   end
+
 ```
 
 **Điểm cần chốt thêm (nhỏ):**
@@ -81,23 +108,39 @@ flowchart LR
 ```mermaid
 flowchart LR
   subgraph ADMIN [Admin - Huan luyen]
-    D1([Anh theo thu muc giong]) --> D2[Detect / crop hoac segmentation]
-    D2 --> D3[Trich dac trung: Shape + LBP + HSV]
-    D3 --> D4[Chuan hoa cuc bo + Concat]
-    D4 --> D5[StandardScaler (toan cuc)]
-    D5 --> D6[PCA nen ve 128-256 chieu]
-    D6 --> D7[Train Linear SVM (One-vs-Rest) class_weight=balanced]
-    D7 --> D8[(Luu scaler.pkl, pca.pkl, svm.pkl, labels.pkl)]
+    D1([Anh theo thu muc giong])
+    D2[Detect crop hoac segmentation]
+    D3[Trich dac trung Shape LBP HSV]
+    D4[Chuan hoa cuc bo va Concat]
+    D5[StandardScaler toan cuc]
+    D6[PCA nen ve 128 den 256 chieu]
+    D7[Train Linear SVM One vs Rest class weight balanced]
+    D8[(Luu scaler pkl pca pkl svm pkl labels pkl)]
+    D1 --> D2
+    D2 --> D3
+    D3 --> D4
+    D4 --> D5
+    D5 --> D6
+    D6 --> D7
+    D7 --> D8
   end
 
   subgraph USER [User - Suy luan]
-    E1[Upload anh] --> E2[Detect / crop hoac segmentation]
-    E2 --> E3[Trich dac trung (Shape / LBP / HSV) -> Concat]
-    E3 --> E4[StandardScaler.transform]
-    E4 --> E5[PCA.transform]
-    E5 --> E6[Linear SVM predict / predict_proba]
-    E6 --> E7[Tra ket qua: Top-1 neu >= nguong, hoac Top-3]
+    E1[Upload anh]
+    E2[Detect crop hoac segmentation]
+    E3[Trich dac trung Shape LBP HSV roi Concat]
+    E4[StandardScaler transform]
+    E5[PCA transform]
+    E6[Linear SVM predict hoac predict proba]
+    E7[Tra ket qua Top1 neu vuot nguong hoac Top3]
+    E1 --> E2
+    E2 --> E3
+    E3 --> E4
+    E4 --> E5
+    E5 --> E6
+    E6 --> E7
   end
+
 ```
 
 **Điểm cần chốt thêm (nhỏ):**
