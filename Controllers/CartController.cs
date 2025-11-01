@@ -20,9 +20,6 @@ namespace PawVerseAPI.Controllers
             _context = context;
         }
 
-        /// <summary>
-        /// Lấy giỏ hàng hiện tại của người dùng
-        /// </summary>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<CartDto>>> GetCart()
         {
@@ -48,9 +45,6 @@ namespace PawVerseAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Thêm sản phẩm vào giỏ hàng
-        /// </summary>
         [HttpPost("items")]
         public async Task<ActionResult<ApiResponse<CartDto>>> AddToCart([FromBody] AddToCartRequest request)
         {
@@ -134,9 +128,6 @@ namespace PawVerseAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Cập nhật số lượng sản phẩm trong giỏ hàng
-        /// </summary>
         [HttpPut("items/{id}")]
         public async Task<ActionResult<ApiResponse<CartDto>>> UpdateCartItem(int id, [FromBody] UpdateCartItemRequest request)
         {
@@ -195,9 +186,6 @@ namespace PawVerseAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Xóa sản phẩm khỏi giỏ hàng
-        /// </summary>
         [HttpDelete("items/{id}")]
         public async Task<ActionResult<ApiResponse<CartDto>>> RemoveFromCart(int id)
         {

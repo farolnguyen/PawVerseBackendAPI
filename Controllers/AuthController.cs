@@ -16,17 +16,20 @@ namespace PawVerseAPI.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly JwtHelper _jwtHelper;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             JwtHelper jwtHelper,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ILogger<AuthController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtHelper = jwtHelper;
             _configuration = configuration;
+            _logger = logger;
         }
 
         /// <summary>
@@ -243,6 +246,87 @@ namespace PawVerseAPI.Controllers
         }
 
         /// <summary>
+        /// Upload ảnh đại diện
+        /// </summary>
+        [Authorize]
+        [HttpPost("profile/upload-avatar")]
+        public async Task<ActionResult<ApiResponse<string>>> UploadAvatar(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse("Vui lòng chọn ảnh"));
+            }
+
+            // Validate file type
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse("Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif)"));
+            }
+
+            // Validate file size (max 5MB)
+            if (file.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse("Kích thước ảnh không được vượt quá 5MB"));
+            }
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<string>.ErrorResponse("Unauthorized"));
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(ApiResponse<string>.ErrorResponse("Không tìm thấy người dùng"));
+            }
+
+            try
+            {
+                // Create profiles directory if not exists
+                var profilesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "profiles");
+                if (!Directory.Exists(profilesPath))
+                {
+                    Directory.CreateDirectory(profilesPath);
+                }
+
+                // Delete old avatar if exists
+                if (!string.IsNullOrEmpty(user.Avatar))
+                {
+                    var oldAvatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", user.Avatar);
+                    if (System.IO.File.Exists(oldAvatarPath))
+                    {
+                        System.IO.File.Delete(oldAvatarPath);
+                    }
+                }
+
+                // Generate unique filename
+                var fileName = $"{userId}_{DateTime.Now:yyyyMMddHHmmss}{extension}";
+                var filePath = Path.Combine(profilesPath, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Update user avatar path
+                user.Avatar = $"profiles/{fileName}";
+                user.NgayCapNhat = DateTime.Now;
+                await _userManager.UpdateAsync(user);
+
+                return Ok(ApiResponse<string>.SuccessResponse(user.Avatar, "Upload ảnh thành công"));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading avatar");
+                return StatusCode(500, ApiResponse<string>.ErrorResponse("Lỗi khi upload ảnh"));
+            }
+        }
+
+        /// <summary>
         /// Đổi mật khẩu
         /// </summary>
         [Authorize]
@@ -281,6 +365,75 @@ namespace PawVerseAPI.Controllers
             await _userManager.UpdateSecurityStampAsync(user);
 
             return Ok(ApiResponse<object>.SuccessResponse(null, "Đổi mật khẩu thành công"));
+        }
+
+        /// <summary>
+        /// Quên mật khẩu - Verify user
+        /// </summary>
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(ApiResponse<object>.ErrorResponse("Dữ liệu không hợp lệ", errors));
+            }
+
+            // Find user by email
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return NotFound(ApiResponse<object>.ErrorResponse("Không tìm thấy tài khoản với email này"));
+            }
+
+            // Verify phone number matches
+            if (user.PhoneNumber != request.PhoneNumber)
+            {
+                return BadRequest(ApiResponse<object>.ErrorResponse("Số điện thoại không khớp với tài khoản"));
+            }
+
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Xác thực thành công. Vui lòng nhập mật khẩu mới"));
+        }
+
+        /// <summary>
+        /// Reset mật khẩu
+        /// </summary>
+        [HttpPost("reset-password")]
+        public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(ApiResponse<object>.ErrorResponse("Dữ liệu không hợp lệ", errors));
+            }
+
+            // Find user by email
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return NotFound(ApiResponse<object>.ErrorResponse("Không tìm thấy tài khoản"));
+            }
+
+            // Remove old password and set new one
+            await _userManager.RemovePasswordAsync(user);
+            var result = await _userManager.AddPasswordAsync(user, request.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return BadRequest(ApiResponse<object>.ErrorResponse("Đặt lại mật khẩu thất bại", errors));
+            }
+
+            // Update security stamp
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Đặt lại mật khẩu thành công"));
         }
 
         /// <summary>

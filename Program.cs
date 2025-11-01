@@ -89,6 +89,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
 // Add Swagger/OpenAPI
@@ -142,6 +143,18 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Serve static files (Images)
+app.UseStaticFiles(); // Serves from wwwroot/
+
+// Serve /images path (lowercase) from wwwroot/Images (uppercase)
+// This handles database paths like /images/categories/Pate.png
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images")),
+    RequestPath = "/images"
+});
 
 // Use CORS
 app.UseCors("AllowAll");

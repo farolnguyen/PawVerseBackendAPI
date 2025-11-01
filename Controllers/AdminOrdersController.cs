@@ -71,7 +71,7 @@ namespace PawVerseAPI.Controllers
                         DiaChiGiaoHang = o.DiaChiGiaoHang,
                         NgayDatHang = o.NgayDatHang,
                         NgayGiaoHang = o.NgayGiaoHangDuKien,
-                        ChiTietDonHang = o.ChiTietDonHangs.Select(ct => new OrderItemDto
+                        ChiTietDonHang = o.ChiTietDonHangs.Select(ct => new AdminOrderItemDto
                         {
                             IdSanPham = ct.IdSanPham,
                             TenSanPham = ct.SanPham != null ? ct.SanPham.TenSanPham : "",
@@ -134,7 +134,7 @@ namespace PawVerseAPI.Controllers
                     DiaChiGiaoHang = order.DiaChiGiaoHang,
                     NgayDatHang = order.NgayDatHang,
                     NgayGiaoHang = order.NgayGiaoHangDuKien,
-                    ChiTietDonHang = order.ChiTietDonHangs.Select(ct => new OrderItemDto
+                    ChiTietDonHang = order.ChiTietDonHangs.Select(ct => new AdminOrderItemDto
                     {
                         IdSanPham = ct.IdSanPham,
                         TenSanPham = ct.SanPham?.TenSanPham ?? "",
@@ -156,7 +156,7 @@ namespace PawVerseAPI.Controllers
         /// Update order status
         /// </summary>
         [HttpPut("{id}/status")]
-        public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequest request)
+        public async Task<ActionResult<ApiResponse<object>>> UpdateOrderStatus(int id, [FromBody] AdminUpdateOrderStatusRequest request)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace PawVerseAPI.Controllers
                 order.TrangThai = request.TrangThaiDonHang;
 
                 // Update delivery date if status is completed
-                if (request.TrangThaiDonHang == "Đã giao")
+                if (request.TrangThaiDonHang == "Đã giao hàng" || request.TrangThaiDonHang == "Đã giao")
                 {
                     order.NgayGiaoHangDuKien = DateTime.Now;
                 }

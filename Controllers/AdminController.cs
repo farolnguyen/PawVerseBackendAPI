@@ -454,7 +454,7 @@ namespace PawVerseAPI.Controllers
         /// Create new product
         /// </summary>
         [HttpPost("products")]
-        public async Task<ActionResult<ApiResponse<ProductAdminDto>>> CreateProduct([FromBody] CreateProductRequest request)
+        public async Task<ActionResult<ApiResponse<ProductAdminDto>>> CreateProduct([FromBody] AdminCreateProductRequest request)
         {
             try
             {
@@ -515,7 +515,7 @@ namespace PawVerseAPI.Controllers
         /// Update product
         /// </summary>
         [HttpPut("products/{id}")]
-        public async Task<ActionResult<ApiResponse<ProductAdminDto>>> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
+        public async Task<ActionResult<ApiResponse<ProductAdminDto>>> UpdateProduct(int id, [FromBody] AdminUpdateProductRequest request)
         {
             try
             {

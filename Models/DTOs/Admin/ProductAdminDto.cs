@@ -20,7 +20,7 @@ namespace PawVerseAPI.Models.DTOs.Admin
         public DateTime NgayCapNhat { get; set; }
     }
 
-    public class CreateProductRequest
+    public class AdminCreateProductRequest
     {
         public string TenSanPham { get; set; } = string.Empty;
         public string TenAlias { get; set; } = string.Empty;
@@ -40,7 +40,7 @@ namespace PawVerseAPI.Models.DTOs.Admin
         public string TrangThai { get; set; } = "Còn hàng";
     }
 
-    public class UpdateProductRequest
+    public class AdminUpdateProductRequest
     {
         public string TenSanPham { get; set; } = string.Empty;
         public string TenAlias { get; set; } = string.Empty;

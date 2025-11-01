@@ -77,10 +77,19 @@ namespace PawVerseAPI.Controllers
                 }
 
                 // Get shipping cost
-                var vanChuyen = await _context.VanChuyens.FindAsync(request.IdVanChuyen);
-                if (vanChuyen == null)
+                // If no shipping method specified (0), use default (free shipping)
+                decimal phiVanChuyen = 0;
+                int? idVanChuyen = null;
+                
+                if (request.IdVanChuyen > 0)
                 {
-                    return BadRequest(ApiResponse<OrderDto>.ErrorResponse("Phương thức vận chuyển không hợp lệ"));
+                    var vanChuyen = await _context.VanChuyens.FindAsync(request.IdVanChuyen);
+                    if (vanChuyen == null)
+                    {
+                        return BadRequest(ApiResponse<OrderDto>.ErrorResponse("Phương thức vận chuyển không hợp lệ"));
+                    }
+                    phiVanChuyen = vanChuyen.PhiVanChuyen;
+                    idVanChuyen = request.IdVanChuyen;
                 }
 
                 // Calculate total
@@ -90,7 +99,6 @@ namespace PawVerseAPI.Controllers
                     return gia * item.SoLuong;
                 });
 
-                decimal phiVanChuyen = vanChuyen.PhiVanChuyen;
                 decimal giamGia = 0;
 
                 // Apply coupon if provided
@@ -123,7 +131,7 @@ namespace PawVerseAPI.Controllers
                     NgayGiaoHangDuKien = DateTime.Now.AddDays(3), // Default 3 days
                     TrangThai = "Chờ xác nhận",
                     PhuongThucThanhToan = request.PhuongThucThanhToan,
-                    IdVanChuyen = request.IdVanChuyen,
+                    IdVanChuyen = idVanChuyen,
                     PhiVanChuyen = phiVanChuyen,
                     IdCoupon = request.IdCoupon,
                     TongTien = tongTien,

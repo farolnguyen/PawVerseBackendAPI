@@ -187,16 +187,7 @@ namespace PawVerseAPI.Services
                 
             _logger.LogInformation($"Removing duplicated content from string of length: {content.Length}");
             
-            // Xử lý trường hợp đặc biệt khi có hai câu trả lời trùng nhau
-            int potentialDuplicateIndex = FindPotentialDuplicateStart(content);
-            if (potentialDuplicateIndex > 0)
-            {
-                string firstPart = content.Substring(0, potentialDuplicateIndex);
-                _logger.LogInformation($"Found potential duplicate at position {potentialDuplicateIndex}, returning first part");
-                return firstPart;
-            }
-            
-            // Xử lý trường hợp cụ thể khi nội dung bị lặp lại hoàn toàn
+            // STEP 1: Kiểm tra exact duplicate (half-half) - MOVED TO TOP
             if (content.Length % 2 == 0)
             {
                 int halfLength = content.Length / 2;
@@ -205,9 +196,44 @@ namespace PawVerseAPI.Services
                 
                 if (firstHalf == secondHalf)
                 {
-                    _logger.LogInformation("Detected exact duplicate content, returning first half");
+                    _logger.LogInformation("Detected exact duplicate content (50-50), returning first half");
                     return firstHalf;
                 }
+            }
+            
+            // STEP 2: Kiểm tra duplicate với các tỷ lệ khác (60-40, 70-30, etc.)
+            for (double ratio = 0.4; ratio <= 0.6; ratio += 0.05)
+            {
+                int splitPoint = (int)(content.Length * ratio);
+                if (splitPoint > 10 && splitPoint < content.Length - 10)
+                {
+                    string part1 = content.Substring(0, splitPoint);
+                    string part2 = content.Substring(splitPoint);
+                    
+                    // Check if part2 starts with similar content as part1
+                    int checkLength = Math.Min(50, part1.Length);
+                    if (part1.Length >= checkLength && part2.Length >= checkLength)
+                    {
+                        string part1Start = part1.Substring(0, checkLength);
+                        string part2Start = part2.Substring(0, checkLength);
+                        
+                        double similarity = CalculateStringSimilarity(part1Start, part2Start);
+                        if (similarity > 0.8)
+                        {
+                            _logger.LogInformation($"Detected duplicate at {ratio * 100}% split point with similarity {similarity}, returning first part");
+                            return part1.TrimEnd();
+                        }
+                    }
+                }
+            }
+            
+            // STEP 3: Xử lý trường hợp đặc biệt khi có hai câu trả lời trùng nhau với keywords
+            int potentialDuplicateIndex = FindPotentialDuplicateStart(content);
+            if (potentialDuplicateIndex > 0)
+            {
+                string firstPart = content.Substring(0, potentialDuplicateIndex);
+                _logger.LogInformation($"Found potential duplicate at position {potentialDuplicateIndex}, returning first part");
+                return firstPart.TrimEnd();
             }
             
             // Tìm và loại bỏ những câu hoàn chỉnh bị lặp lại
@@ -300,6 +326,47 @@ namespace PawVerseAPI.Services
         }
         
         /// <summary>
+        /// Tính độ tương đồng giữa hai chuỗi văn bản (Levenshtein-based similarity)
+        /// </summary>
+        private double CalculateStringSimilarity(string s1, string s2)
+        {
+            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
+                return 0;
+            
+            // Normalize strings
+            s1 = s1.ToLowerInvariant().Trim();
+            s2 = s2.ToLowerInvariant().Trim();
+            
+            if (s1 == s2)
+                return 1.0;
+            
+            // Calculate Levenshtein distance
+            int[,] matrix = new int[s1.Length + 1, s2.Length + 1];
+            
+            for (int i = 0; i <= s1.Length; i++)
+                matrix[i, 0] = i;
+            for (int j = 0; j <= s2.Length; j++)
+                matrix[0, j] = j;
+            
+            for (int i = 1; i <= s1.Length; i++)
+            {
+                for (int j = 1; j <= s2.Length; j++)
+                {
+                    int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
+                    matrix[i, j] = Math.Min(
+                        Math.Min(matrix[i - 1, j] + 1, matrix[i, j - 1] + 1),
+                        matrix[i - 1, j - 1] + cost
+                    );
+                }
+            }
+            
+            int distance = matrix[s1.Length, s2.Length];
+            int maxLength = Math.Max(s1.Length, s2.Length);
+            
+            return 1.0 - ((double)distance / maxLength);
+        }
+        
+        /// <summary>
         /// Tìm vị trí tiềm năng bắt đầu của phần trùng lặp trong chuỗi
         /// </summary>
         private int FindPotentialDuplicateStart(string content)
@@ -307,22 +374,45 @@ namespace PawVerseAPI.Services
             if (string.IsNullOrEmpty(content) || content.Length < 20)
                 return -1;
                 
-            string[] keywords = new[] { "Xin chào", "Bạn có cần", "Tôi rất", "hỗ trợ bạn", "về sản phẩm" };
+            // Expanded keyword list for better detection
+            string[] keywords = new[] { 
+                "Xin chào", "Chào bạn", "Mình rất", "Tôi rất", 
+                "Bạn có cần", "giới thiệu", "hỗ trợ bạn", 
+                "về sản phẩm", "sản phẩm nào", "Dưới đây",
+                "Các sản phẩm", "PawVerse", "thú cưng",
+                "Tên sản phẩm:", "Giá bán:", "Danh mục:"
+            };
             
             foreach (var keyword in keywords)
             {
-                int firstIndex = content.IndexOf(keyword);
+                int firstIndex = content.IndexOf(keyword, StringComparison.OrdinalIgnoreCase);
                 if (firstIndex >= 0)
                 {
-                    int secondIndex = content.IndexOf(keyword, firstIndex + keyword.Length);
+                    // Look for second occurrence
+                    int secondIndex = content.IndexOf(keyword, firstIndex + keyword.Length, StringComparison.OrdinalIgnoreCase);
                     if (secondIndex > 0)
                     {
-                        int position = Math.Max(0, secondIndex - 5);
+                        // Calculate potential duplicate position
+                        int position = Math.Max(0, secondIndex - 10);
+                        
+                        // Try to find sentence boundary
                         int sentenceStart = content.LastIndexOf('.', position);
-                        if (sentenceStart >= 0)
+                        if (sentenceStart >= 0 && sentenceStart > firstIndex)
                         {
+                            _logger.LogInformation($"Found duplicate keyword '{keyword}' at positions {firstIndex} and {secondIndex}, cutting at {sentenceStart + 1}");
                             return sentenceStart + 1;
                         }
+                        
+                        // If no sentence boundary, try paragraph break
+                        int paragraphStart = content.LastIndexOf('\n', position);
+                        if (paragraphStart >= 0 && paragraphStart > firstIndex)
+                        {
+                            _logger.LogInformation($"Found duplicate keyword '{keyword}', cutting at paragraph {paragraphStart + 1}");
+                            return paragraphStart + 1;
+                        }
+                        
+                        // Last resort: cut at the second occurrence position
+                        _logger.LogInformation($"Found duplicate keyword '{keyword}', cutting at position {position}");
                         return position;
                     }
                 }

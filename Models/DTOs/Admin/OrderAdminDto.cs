@@ -13,10 +13,10 @@ namespace PawVerseAPI.Models.DTOs.Admin
         public string? DiaChiGiaoHang { get; set; }
         public DateTime NgayDatHang { get; set; }
         public DateTime? NgayGiaoHang { get; set; }
-        public List<OrderItemDto> ChiTietDonHang { get; set; } = new List<OrderItemDto>();
+        public List<AdminOrderItemDto> ChiTietDonHang { get; set; } = new List<AdminOrderItemDto>();
     }
 
-    public class OrderItemDto
+    public class AdminOrderItemDto
     {
         public int IdSanPham { get; set; }
         public string TenSanPham { get; set; } = string.Empty;
@@ -25,12 +25,12 @@ namespace PawVerseAPI.Models.DTOs.Admin
         public decimal ThanhTien { get; set; }
     }
 
-    public class UpdateOrderStatusRequest
+    public class AdminUpdateOrderStatusRequest
     {
         public string TrangThaiDonHang { get; set; } = string.Empty;
     }
 
-    public class UpdatePaymentStatusRequest
+    public class AdminUpdatePaymentStatusRequest
     {
         public string TrangThaiThanhToan { get; set; } = string.Empty;
     }

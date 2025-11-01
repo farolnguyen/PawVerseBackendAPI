@@ -25,7 +25,7 @@ public partial class DonHang
 
     public int? IdCoupon { get; set; }
 
-    public int IdVanChuyen { get; set; }
+    public int? IdVanChuyen { get; set; }
 
     public decimal PhiVanChuyen { get; set; }
 
@@ -46,5 +46,5 @@ public partial class DonHang
     public virtual ApplicationUser NguoiDung { get; set; } = null!;
 
     [ForeignKey("IdVanChuyen")]
-    public virtual VanChuyen VanChuyen { get; set; } = null!;
+    public virtual VanChuyen? VanChuyen { get; set; }
 }
