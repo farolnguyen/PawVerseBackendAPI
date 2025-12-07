@@ -84,6 +84,9 @@ builder.Services.AddScoped<JwtHelper>();
 // Register Chatbot Service
 builder.Services.AddHttpClient<PawVerseAPI.Services.IChatbotService, PawVerseAPI.Services.ChatbotService>();
 
+// Register Breed Detection Service (Singleton for model caching)
+builder.Services.AddSingleton<PawVerseAPI.Services.BreedDetection.IBreedDetectionService, PawVerseAPI.Services.BreedDetection.BreedDetectionService>();
+
 // Add Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -172,5 +175,20 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     await RoleSeeder.SeedRolesAsync(services);
 }
+
+// Initialize Breed Detection Models (fire-and-forget background task)
+_ = Task.Run(async () =>
+{
+    var breedService = app.Services.GetRequiredService<PawVerseAPI.Services.BreedDetection.IBreedDetectionService>();
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    
+    logger.LogInformation("Starting breed detection models initialization...");
+    var success = await breedService.InitializeModelsAsync();
+    
+    if (success)
+        logger.LogInformation("Breed detection models initialized successfully");
+    else
+        logger.LogWarning("Failed to initialize breed detection models");
+});
 
 app.Run();

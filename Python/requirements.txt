@@ -1,0 +1,20 @@
+# PyTorch with CUDA 11.8 (for NVIDIA GTX 1650)
+# Updated to support Python 3.13
+torch>=2.5.0
+torchvision>=0.20.0
+--extra-index-url https://download.pytorch.org/whl/cu118
+
+# FAISS CPU version (efficient for retrieval)
+faiss-cpu>=1.8.0
+
+# OpenCLIP for image embedding
+open-clip-torch>=2.24.0
+
+# YOLO for pet detection
+ultralytics>=8.3.0
+
+# Image processing
+Pillow>=10.0.0
+
+# Utilities
+numpy>=1.24.0
