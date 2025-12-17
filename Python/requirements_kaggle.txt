@@ -1,0 +1,50 @@
+# PawVerse Try-On - Kaggle Requirements
+# Install with: pip install -r requirements_kaggle.txt
+# IMPORTANT: Install numpy FIRST to avoid binary incompatibility
+
+# NumPy - INSTALL FIRST!
+numpy==1.23.5
+
+# Core dependencies
+scipy==1.11.4
+
+# PyTorch (usually pre-installed on Kaggle)
+# torch>=2.0.0
+# torchvision>=0.15.0
+
+# Diffusion models - updated for huggingface_hub >= 0.21.0 compatibility
+# CRITICAL: diffusers >= 0.27.0 required for new hf_hub_download API
+huggingface_hub>=0.21.0
+peft>=0.17.0
+diffusers>=0.27.0
+transformers>=4.37.0
+accelerate>=0.26.0
+
+# Computer vision - headless version for servers
+# CRITICAL: ultralytics >= 8.3.0 required for YOLO11 support (C3k2 module)
+ultralytics>=8.3.0
+opencv-python-headless==4.8.1.78
+
+# Image processing
+Pillow==10.1.0
+
+# Memory optimization (DISABLED - causes Flash-Attention incompatibility)
+# xformers==0.0.22
+# Use standard attention instead - slightly slower but stable
+
+# Web interface
+streamlit==1.28.0
+
+# Tunneling for public URL
+pyngrok==6.0.0
+
+# Installation order (IMPORTANT - follow this sequence):
+# 1. pip install numpy==1.23.5
+# 2. pip install scipy==1.11.4
+# 3. pip install ultralytics>=8.3.0
+# 4. pip install opencv-python-headless==4.8.1.78
+# 5. pip install huggingface_hub>=0.21.0
+# 6. pip install peft>=0.17.0
+# 7. pip install diffusers>=0.27.0 transformers>=4.37.0 accelerate>=0.26.0
+# 8. pip install streamlit pyngrok
+# NOTE: xformers/flash-attention SKIPPED due to compatibility issues

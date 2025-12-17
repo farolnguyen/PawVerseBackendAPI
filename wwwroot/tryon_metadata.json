@@ -1,0 +1,435 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2025-12-07T17:22:00Z",
+  "total_products": 6,
+  "products": [
+    {
+      "product_id": "bowl_001",
+      "source_file": "batancham.png",
+      "name_vi": "Bát ăn chậm - Hình trái dâu",
+      "name_en": "Slow Feeder Bowl - Strawberry Shape",
+      "category": "bowl",
+      "sub_category": "slow_feeder",
+      "compatible_animals": ["dog", "cat"],
+      "size": "medium",
+      "tryon_config": {
+        "placement_type": "on_ground",
+        "position_anchor": "front_ground",
+        "relative_position": "in_front_of_paws",
+        "scale_factor": 0.30,
+        "scale_range": [0.25, 0.35],
+        "rotation_range": [-15, 15],
+        "z_index": 10,
+        "occlusion": "none"
+      },
+      "visual_attributes": {
+        "primary_color": "#A8D5BA",
+        "primary_color_name": "mint_green",
+        "secondary_color": "#FFFFFF",
+        "accent_color": "#E8F5E9",
+        "shape": "oval",
+        "pattern": "strawberry_leaf",
+        "texture": "smooth_plastic",
+        "has_ridges": true,
+        "style": "cute_kawaii"
+      },
+      "physical_attributes": {
+        "material": "plastic",
+        "approximate_size_cm": "20x15x5",
+        "weight_category": "light"
+      },
+      "prompt_engineering": {
+        "base_prompt": "a {animal_type} with a mint green strawberry-shaped slow feeder bowl",
+        "detailed_prompt": "a cute {animal_type} eating from a mint green plastic slow feeder bowl shaped like a strawberry with raised ridges inside, the bowl is placed on the ground in front of the {animal_type}'s paws",
+        "style_modifiers": "chibi anime style, kawaii aesthetic, soft pastel colors, gentle lighting, clean background",
+        "composition_hints": "bowl positioned in lower center of frame, pet's head looking down at bowl, bowl takes up about 30% of lower frame",
+        "object_description": "oval mint green plastic bowl with strawberry leaf decoration, anti-gulp raised pattern inside",
+        "negative_prompt": "blurry, distorted bowl, multiple bowls, floating objects, realistic style, dark atmosphere, messy background, occluded bowl"
+      },
+      "controlnet_guidance": {
+        "canny_edge_importance": 0.7,
+        "placement_markers": {
+          "bowl_center": [0.5, 0.75],
+          "pet_head_target": [0.5, 0.4]
+        },
+        "spatial_relationship": "bowl below pet's head, aligned with front paws"
+      },
+      "generation_parameters": {
+        "recommended_strength": 0.75,
+        "recommended_steps": 30,
+        "guidance_scale": 7.5,
+        "seed_variation": true
+      },
+      "metadata": {
+        "preprocessing_needed": true,
+        "background_removal_priority": "high",
+        "quality_score": null,
+        "tags": ["bowl", "feeder", "slow_eating", "mint", "strawberry", "cute"]
+      }
+    },
+    {
+      "product_id": "bowl_002",
+      "source_file": "batandoi.png",
+      "name_vi": "Bát ăn đôi Cherry - Cho mèo",
+      "name_en": "Double Bowl Cherry - For Cats",
+      "category": "bowl",
+      "sub_category": "double_bowl",
+      "compatible_animals": ["cat", "small_dog"],
+      "size": "small",
+      "tryon_config": {
+        "placement_type": "on_ground",
+        "position_anchor": "front_ground",
+        "relative_position": "centered_front",
+        "scale_factor": 0.32,
+        "scale_range": [0.28, 0.38],
+        "rotation_range": [-10, 10],
+        "z_index": 10,
+        "occlusion": "none"
+      },
+      "visual_attributes": {
+        "primary_color": "#7CB342",
+        "primary_color_name": "leaf_green",
+        "secondary_color": "#D32F2F",
+        "secondary_color_name": "cherry_red",
+        "accent_color": "#8BC34A",
+        "shape": "dual_circular",
+        "pattern": "cherry_stem",
+        "texture": "smooth_ceramic",
+        "has_ridges": false,
+        "style": "playful_fruit"
+      },
+      "physical_attributes": {
+        "material": "ceramic",
+        "approximate_size_cm": "25x15x5",
+        "weight_category": "medium"
+      },
+      "prompt_engineering": {
+        "base_prompt": "a {animal_type} with a cherry-themed double bowl",
+        "detailed_prompt": "a cute {animal_type} eating from a green leaf-shaped base with two red ceramic bowls designed like cherries, the double bowl is placed on the ground in front of the {animal_type}",
+        "style_modifiers": "chibi anime style, kawaii aesthetic, vibrant fruit colors, bright cheerful lighting, simple clean background",
+        "composition_hints": "double bowl centered in lower frame, pet positioned above looking down, bowls take up 35% of lower portion",
+        "object_description": "green leaf-shaped platform with two round red cherry bowls, connected design",
+        "negative_prompt": "blurry, distorted bowls, multiple sets, floating, realistic render, dark mood, cluttered background, separated bowls"
+      },
+      "controlnet_guidance": {
+        "canny_edge_importance": 0.7,
+        "placement_markers": {
+          "bowl_center": [0.5, 0.72],
+          "pet_head_target": [0.5, 0.38]
+        },
+        "spatial_relationship": "dual bowls symmetrically placed, pet centered above"
+      },
+      "generation_parameters": {
+        "recommended_strength": 0.75,
+        "recommended_steps": 30,
+        "guidance_scale": 7.5,
+        "seed_variation": true
+      },
+      "metadata": {
+        "preprocessing_needed": true,
+        "background_removal_priority": "high",
+        "quality_score": null,
+        "tags": ["bowl", "double", "cherry", "cat", "ceramic", "cute", "fruit"]
+      }
+    },
+    {
+      "product_id": "bell_003",
+      "source_file": "chuong_huan_luyen.png",
+      "name_vi": "Chuông huấn luyện cho thú cưng",
+      "name_en": "Pet Training Bells",
+      "category": "training_bell",
+      "sub_category": "communication_device",
+      "compatible_animals": ["dog", "cat"],
+      "size": "small",
+      "tryon_config": {
+        "placement_type": "on_ground",
+        "position_anchor": "front_ground_side",
+        "relative_position": "beside_paw",
+        "scale_factor": 0.20,
+        "scale_range": [0.15, 0.25],
+        "rotation_range": [-20, 20],
+        "z_index": 8,
+        "occlusion": "partial_ok"
+      },
+      "visual_attributes": {
+        "primary_color": "#E91E63",
+        "primary_color_name": "pink",
+        "secondary_colors": ["#FFFFFF", "#4CAF50", "#FF5722", "#FFEB3B"],
+        "color_names": ["white", "green", "red_orange", "yellow"],
+        "shape": "dome_bells",
+        "pattern": "paw_prints",
+        "texture": "glossy_metal",
+        "has_ridges": false,
+        "style": "colorful_playful"
+      },
+      "physical_attributes": {
+        "material": "metal",
+        "approximate_size_cm": "6x6x4_each",
+        "weight_category": "light",
+        "quantity": 5
+      },
+      "prompt_engineering": {
+        "base_prompt": "a {animal_type} with colorful pet training bells",
+        "detailed_prompt": "a cute {animal_type} standing next to a set of five colorful dome-shaped training bells with paw print buttons (pink, white, green, red, yellow), bells arranged on the ground beside the {animal_type}'s paw",
+        "style_modifiers": "chibi anime style, kawaii aesthetic, rainbow bright colors, soft lighting, minimal background",
+        "composition_hints": "bells arranged in small cluster to the side, pet looking at or touching one bell, bells occupy 20% of frame",
+        "object_description": "five small dome bells in vibrant colors (pink, white, green, red, yellow) with black paw print buttons on top",
+        "negative_prompt": "blurry bells, too many bells, floating objects, realistic style, dark lighting, messy arrangement, bells far from pet"
+      },
+      "controlnet_guidance": {
+        "canny_edge_importance": 0.65,
+        "placement_markers": {
+          "bells_center": [0.35, 0.70],
+          "pet_paw_target": [0.45, 0.65]
+        },
+        "spatial_relationship": "bells grouped near front paw, pet touching or looking at bells"
+      },
+      "generation_parameters": {
+        "recommended_strength": 0.70,
+        "recommended_steps": 30,
+        "guidance_scale": 7.5,
+        "seed_variation": true
+      },
+      "metadata": {
+        "preprocessing_needed": true,
+        "background_removal_priority": "high",
+        "quality_score": null,
+        "tags": ["training", "bell", "colorful", "communication", "paw_print", "multi_color"]
+      }
+    },
+    {
+      "product_id": "bed_004",
+      "source_file": "nemdabao.png",
+      "name_vi": "Nệm Sonice hoa tiết da báo Square Bed Size",
+      "name_en": "Leopard Print Pet Bed Square Size",
+      "category": "bed",
+      "sub_category": "cushion_bed",
+      "compatible_animals": ["dog", "cat"],
+      "size": "medium",
+      "tryon_config": {
+        "placement_type": "on_ground",
+        "position_anchor": "background_ground",
+        "relative_position": "behind_or_under_pet",
+        "scale_factor": 0.50,
+        "scale_range": [0.45, 0.60],
+        "rotation_range": [-5, 5],
+        "z_index": 5,
+        "occlusion": "partial_expected"
+      },
+      "visual_attributes": {
+        "primary_color": "#F5DEB3",
+        "primary_color_name": "cream_white",
+        "secondary_color": "#8B4513",
+        "secondary_color_name": "brown",
+        "accent_color": "#D2691E",
+        "shape": "rectangular_cushion",
+        "pattern": "leopard_print",
+        "texture": "soft_plush",
+        "has_ridges": false,
+        "style": "cozy_luxury"
+      },
+      "physical_attributes": {
+        "material": "plush_fabric",
+        "approximate_size_cm": "55x45x10",
+        "weight_category": "medium"
+      },
+      "prompt_engineering": {
+        "base_prompt": "a {animal_type} lying on a leopard print pet bed",
+        "detailed_prompt": "a cute {animal_type} resting on a soft rectangular cushion bed with cream white center and brown leopard print borders, the bed is on the ground with the {animal_type} sitting or lying comfortably on it",
+        "style_modifiers": "chibi anime style, kawaii aesthetic, warm cozy colors, soft gentle lighting, clean background",
+        "composition_hints": "bed takes up 50% of lower frame, pet positioned on or beside bed, bed slightly behind pet to show depth",
+        "object_description": "rectangular cushion bed with raised borders, cream white plush interior, brown leopard print exterior sides",
+        "negative_prompt": "blurry bed, floating bed, multiple beds, realistic fabric texture, dark atmosphere, messy room, bed too small"
+      },
+      "controlnet_guidance": {
+        "canny_edge_importance": 0.6,
+        "placement_markers": {
+          "bed_center": [0.5, 0.65],
+          "pet_body_target": [0.5, 0.50]
+        },
+        "spatial_relationship": "pet sitting/lying on bed, bed visible under and around pet"
+      },
+      "generation_parameters": {
+        "recommended_strength": 0.65,
+        "recommended_steps": 30,
+        "guidance_scale": 7.0,
+        "seed_variation": true
+      },
+      "metadata": {
+        "preprocessing_needed": true,
+        "background_removal_priority": "medium",
+        "quality_score": null,
+        "tags": ["bed", "cushion", "leopard", "cozy", "resting", "plush"]
+      }
+    },
+    {
+      "product_id": "muzzle_005",
+      "source_file": "ro_mom_hong.png",
+      "name_vi": "Rọ mõm màu hồng",
+      "name_en": "Pink Pet Muzzle",
+      "category": "muzzle",
+      "sub_category": "soft_muzzle",
+      "compatible_animals": ["dog"],
+      "size": "adjustable",
+      "tryon_config": {
+        "placement_type": "on_face",
+        "position_anchor": "snout_area",
+        "relative_position": "covering_mouth",
+        "scale_factor": 0.25,
+        "scale_range": [0.20, 0.30],
+        "rotation_range": [0, 0],
+        "z_index": 15,
+        "occlusion": "covers_snout"
+      },
+      "visual_attributes": {
+        "primary_color": "#FFB6C1",
+        "primary_color_name": "light_pink",
+        "secondary_color": "#000000",
+        "secondary_color_name": "black",
+        "accent_color": "#FFC0CB",
+        "shape": "mesh_cage",
+        "pattern": "mesh_grid",
+        "texture": "soft_nylon",
+        "has_ridges": false,
+        "style": "gentle_safety"
+      },
+      "physical_attributes": {
+        "material": "soft_nylon_mesh",
+        "approximate_size_cm": "adjustable",
+        "weight_category": "very_light"
+      },
+      "prompt_engineering": {
+        "base_prompt": "a {animal_type} wearing a pink soft muzzle",
+        "detailed_prompt": "a cute {animal_type} wearing a light pink soft mesh muzzle with black buckle straps around the snout and head, the muzzle gently covers the dog's mouth while allowing breathing",
+        "style_modifiers": "chibi anime style, kawaii aesthetic, soft pink tones, gentle caring atmosphere, simple background",
+        "composition_hints": "muzzle visible on dog's face, straps around head, dog looking forward or slightly to side, face centered in frame",
+        "object_description": "pink soft mesh muzzle basket covering snout, black adjustable straps around head and neck, gentle secure fit",
+        "negative_prompt": "blurry muzzle, unrealistic fit, floating straps, harsh realistic style, scary atmosphere, muzzle too tight, distorted face"
+      },
+      "controlnet_guidance": {
+        "canny_edge_importance": 0.8,
+        "placement_markers": {
+          "muzzle_center": [0.5, 0.45],
+          "dog_snout_target": [0.5, 0.45]
+        },
+        "spatial_relationship": "muzzle fitted on dog's snout, straps visible around head"
+      },
+      "generation_parameters": {
+        "recommended_strength": 0.80,
+        "recommended_steps": 35,
+        "guidance_scale": 8.0,
+        "seed_variation": false
+      },
+      "metadata": {
+        "preprocessing_needed": true,
+        "background_removal_priority": "high",
+        "quality_score": null,
+        "tags": ["muzzle", "safety", "pink", "mesh", "dog", "training"],
+        "notes": "Complex placement - requires accurate face detection"
+      }
+    },
+    {
+      "product_id": "collar_006",
+      "source_file": "vongco.png",
+      "name_vi": "Vòng cổ trắng - Có chuông",
+      "name_en": "White Collar with Pink Bell",
+      "category": "collar",
+      "sub_category": "decorative_collar",
+      "compatible_animals": ["cat", "small_dog"],
+      "size": "small_to_medium",
+      "tryon_config": {
+        "placement_type": "on_neck",
+        "position_anchor": "neck_area",
+        "relative_position": "around_neck",
+        "scale_factor": 0.20,
+        "scale_range": [0.15, 0.25],
+        "rotation_range": [0, 0],
+        "z_index": 12,
+        "occlusion": "wraps_neck"
+      },
+      "visual_attributes": {
+        "primary_color": "#F5F5F5",
+        "primary_color_name": "white",
+        "secondary_color": "#FFB6C1",
+        "secondary_color_name": "light_pink",
+        "accent_color": "#C0C0C0",
+        "accent_color_name": "silver",
+        "shape": "strap_with_charm",
+        "pattern": "plain_leather",
+        "texture": "smooth_leather",
+        "has_ridges": false,
+        "style": "elegant_simple"
+      },
+      "physical_attributes": {
+        "material": "synthetic_leather",
+        "approximate_size_cm": "adjustable_25-35",
+        "weight_category": "very_light",
+        "has_bell": true
+      },
+      "prompt_engineering": {
+        "base_prompt": "a {animal_type} wearing a white collar with a pink bell charm",
+        "detailed_prompt": "a cute {animal_type} wearing a white synthetic leather collar with silver buckle and a small pink spherical bell charm hanging from it, the collar fits snugly around the {animal_type}'s neck",
+        "style_modifiers": "chibi anime style, kawaii aesthetic, soft pastel colors, gentle lighting, clean background",
+        "composition_hints": "collar visible around neck, bell hanging below, pet facing forward or at angle, collar occupies neck area",
+        "object_description": "white smooth leather collar with silver metal buckle and small round pink bell charm",
+        "negative_prompt": "blurry collar, floating collar, collar too tight or loose, realistic style, dark background, no bell visible, distorted neck"
+      },
+      "controlnet_guidance": {
+        "canny_edge_importance": 0.75,
+        "placement_markers": {
+          "collar_center": [0.5, 0.35],
+          "pet_neck_target": [0.5, 0.35]
+        },
+        "spatial_relationship": "collar wrapped around neck, bell hanging below throat area"
+      },
+      "generation_parameters": {
+        "recommended_strength": 0.75,
+        "recommended_steps": 32,
+        "guidance_scale": 7.5,
+        "seed_variation": false
+      },
+      "metadata": {
+        "preprocessing_needed": true,
+        "background_removal_priority": "high",
+        "quality_score": null,
+        "tags": ["collar", "white", "bell", "elegant", "cat", "accessory"],
+        "notes": "Requires accurate neck detection for proper placement"
+      }
+    }
+  ],
+  "global_settings": {
+    "default_style": "chibi anime style, kawaii aesthetic, vibrant colors",
+    "default_negative": "blurry, distorted, realistic, dark, scary, multiple products, floating objects",
+    "recommended_model": "runwayml/stable-diffusion-v1-5",
+    "recommended_controlnet": "lllyasviel/sd-controlnet-canny",
+    "default_resolution": "512x512",
+    "alternative_resolution": "768x768"
+  },
+  "category_definitions": {
+    "bowl": {
+      "placement": "ground",
+      "typical_scale": 0.30,
+      "interaction": "eating_drinking"
+    },
+    "collar": {
+      "placement": "neck",
+      "typical_scale": 0.20,
+      "interaction": "wearing"
+    },
+    "muzzle": {
+      "placement": "face",
+      "typical_scale": 0.25,
+      "interaction": "wearing"
+    },
+    "bed": {
+      "placement": "ground_background",
+      "typical_scale": 0.50,
+      "interaction": "sitting_lying"
+    },
+    "training_bell": {
+      "placement": "ground_side",
+      "typical_scale": 0.20,
+      "interaction": "touching_nearby"
+    }
+  }
+}

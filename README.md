@@ -1,245 +1,283 @@
-# PawVerse — Nhận diện Giống Thú Cưng: 3 Phương Pháp
+# 🐾 PawVerse API
 
-Tài liệu này tổng hợp **3 phương pháp** bạn đã chọn để triển khai tính năng nhận diện giống cho PawVerse.  
-Mỗi phương pháp đều có **luồng Admin** (chuẩn bị dữ liệu/kho mẫu) và **luồng User** (khi người dùng upload ảnh), kèm **ưu/nhược** và **khi nào nên dùng**.
+Backend REST API cho ứng dụng thương mại điện tử chuyên về sản phẩm thú cưng, được xây dựng bằng .NET 8 Web API với tích hợp AI.
 
----
+## 📋 Tổng Quan
 
-## Tóm tắt nhanh (chọn phương pháp nào?)
+PawVerse là một nền tảng e-commerce toàn diện dành cho thú cưng, cung cấp:
+- **E-commerce hoàn chỉnh**: Quản lý sản phẩm, đơn hàng, thanh toán
+- **AI-Powered Features**: Nhận diện giống chó/mèo, chatbot tư vấn, virtual try-on
+- **Authentication**: JWT + OAuth (Google, GitHub)
+- **Admin Dashboard**: Quản lý sản phẩm, đơn hàng, thống kê
 
-| Phương pháp | Ý tưởng chính | Điểm mạnh | Hạn chế | Khi nên dùng |
-|---|---|---|---|---|
-| **PA1 — YOLOv11 + CLIP + FAISS (retrieval)** | YOLO cắt thú cưng → CLIP embedding (512D) → tìm gần nhất trong FAISS | Dễ triển khai, chính xác & ổn định, thêm giống mới không cần retrain | Cần GPU để nhanh (nhưng CPU vẫn được) | Khi cần độ chính xác thực tế/robust tốt |
-| **PA-Alt — Thuần thuật toán (Segmentation-first, Part-aware) + k-NN** | Tách nền → đặc trưng **shape+texture+color** → concat → k-NN/FAISS | Rất nhẹ, chạy CPU tốt, giải thích được | Nhạy ánh sáng/góc chụp, kém robust hơn deep | Khi phần cứng hạn chế/ưu tiên giải thích |
-| **PA3 — Feature → PCA → Linear SVM (không retrieval)** | Đặc trưng thủ công → **PCA** nén → **Linear SVM** dự đoán thẳng tên giống | Nhanh, đơn giản, không cần FAISS/CLIP | Cần huấn luyện; kém robust nếu giống rất “na ná” | Dùng làm baseline chắc chắn, API gọn |
+## ✨ Tính Năng Chính
 
----
+### 🛒 E-Commerce Core
+- **Sản phẩm**: CRUD, tìm kiếm, lọc theo danh mục/thương hiệu, sắp xếp
+- **Giỏ hàng**: Thêm/xóa/cập nhật, tính tổng tự động
+- **Đơn hàng**: Đặt hàng, theo dõi trạng thái (6 trạng thái), lịch sử
+- **Wishlist**: Lưu sản phẩm yêu thích
+- **Thanh toán**: COD, thẻ tín dụng, ví điện tử
 
-## Sơ đồ bạn đã vẽ (đã hợp lý)
+### 🤖 AI Features
+- **Breed Detection**: Nhận diện giống chó/mèo bằng YOLOv8 + CNN, gợi ý sản phẩm phù hợp
+- **AI Chatbot**: Tư vấn sản phẩm thông minh với RAG (Retrieval-Augmented Generation)
+- **Virtual Try-On**: Demo AI try-on với Stable Diffusion + ControlNet (Kaggle)
 
-### PA1 — YOLOv11 + CLIP + FAISS
-```mermaid
-graph LR;
-  subgraph ADMIN ["Admin - Chuan bi kho mau"]
-    A1["Anh theo thu muc giong"];
-    A2["YOLOv11 detect + crop dog or cat"];
-    A3["CLIP embed 512D"];
-    A4["FAISS index dogs.index va cats.index"];
-    A5["Mapping faiss_id -> breed_id -> breed_name"];
-    A1 --> A2;
-    A2 --> A3;
-    A3 --> A4;
-    A4 --> A5;
-  end;
+### 👥 User Management
+- **Authentication**: JWT, Google/GitHub OAuth
+- **Authorization**: Role-based (Admin, User)
+- **Profile**: Quản lý thông tin cá nhân, đổi mật khẩu
 
-  subgraph USER ["User - Truy van"]
-    U1["Upload anh"];
-    U2["YOLOv11 detect + crop dog or cat"];
-    U3["CLIP embed 512D"];
-    U4["FAISS Top-k"];
-    U5["Quyet dinh Top-1 + nguong hoac voting"];
-    U6["Tra ket qua breed + confidence + top3"];
-    U1 --> U2;
-    U2 --> U3;
-    U3 --> U4;
-    U4 --> U5;
-    U5 --> U6;
-  end;
+### 📊 Admin Panel
+- **Dashboard**: Thống kê doanh thu, đơn hàng, sản phẩm
+- **Quản lý**: Sản phẩm, danh mục, thương hiệu, đơn hàng
+- **Báo cáo**: Doanh thu theo thời gian, top sản phẩm
+
+## 🛠️ Công Nghệ
+
+- **.NET 8**: Web API framework
+- **Entity Framework Core**: ORM, SQL Server
+- **ASP.NET Identity**: Authentication & Authorization
+- **JWT Bearer**: Token-based authentication
+- **Python**: AI services (YOLOv8, Transformers, Diffusers)
+- **Swagger/OpenAPI**: API documentation
+
+## 📦 Cấu Trúc Project
+
+```
+PawVerseAPI/
+├── Controllers/          # API endpoints
+│   ├── AuthController.cs         # Authentication
+│   ├── ProductsController.cs     # Sản phẩm
+│   ├── OrdersController.cs       # Đơn hàng
+│   ├── BreedDetectionController  # AI nhận diện
+│   ├── ChatbotController.cs      # AI chatbot
+│   └── ...
+├── Models/              # Entity models
+├── Data/                # DbContext, migrations
+├── Services/            # Business logic
+├── Python/              # AI models & scripts
+│   ├── breed_detection.py        # YOLOv8 + CNN
+│   ├── inference_pipeline.py     # Try-on pipeline
+│   └── tryon_streamlit_app.py    # Demo UI
+├── wwwroot/             # Static files (images)
+└── Program.cs           # App configuration
 ```
 
-**Điểm cần chốt thêm (nhỏ):**
-- Nên tách **index chó** và **index mèo** (YOLO biết `dog`/`cat` → chọn đúng index).  
-- Lưu **mapping** `faiss_id → breed_id → breed_name` ở DB/JSON.  
-- Quyết định bằng **Top-1 + ngưỡng** *hoặc* **k-NN có trọng số** trên Top-k.  
-- CLIP vector nên **L2-normalize**; FAISS dùng **IndexFlatIP** (cosine ≈ inner product sau normalize).
+## 🚀 Cách Chạy Dự Án
 
----
+### 1️⃣ Prerequisites
 
-### PA-2 — Segmentation-first, Part-aware + k-NN
-```mermaid
-graph LR;
-  subgraph ADMIN ["Admin - Chuan bi kho mau"]
-    B1["Anh theo thu muc giong"];
-    B2["Segmentation rembg / U2Net / GrabCut -> mask"];
-    B3["Chia phan: dau 1/3 tren, nguc 1/3 giua, toan than = mask"];
-    B4["Dac trung: Shape (Hu/Fourier/ratios), Texture (LBP+Gabor), Color (HSV)"];
-    B5["Chuan hoa + Concat thanh vector"];
-    B6["Index kNN / FAISS + mapping"];
-    B1 --> B2;
-    B2 --> B3;
-    B3 --> B4;
-    B4 --> B5;
-    B5 --> B6;
-  end;
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- SQL Server (LocalDB hoặc SQL Server Express)
+- Python 3.11+ (cho AI features)
+- Visual Studio 2022 hoặc VS Code
 
-  subgraph USER ["User - Truy van"]
-    C1["Upload anh"];
-    C2["Segmentation -> mask"];
-    C3["Kiem tra mask"];
-    C4["YOLO detect fallback -> crop -> segment lai"];
-    C5["Chia phan + tinh dac trung"];
-    C6["Chuan hoa + Concat thanh vector"];
-    C7["Tim Top-k trong index"];
-    C8["Vote theo giong voi trong so"];
-    C9["Tra ket qua breed + confidence + top3"];
-    C1 --> C2;
-    C2 --> C3;
-    C3 --> C4;
-    C3 --> C5;
-    C4 --> C5;
-    C5 --> C6;
-    C6 --> C7;
-    C7 --> C8;
-    C8 --> C9;
-  end;
+### 2️⃣ Clone Repository
+
+```bash
+git clone <repository-url>
+cd PawVerseAPI
 ```
 
-**Điểm cần chốt thêm (nhỏ):**
-- Sau segmentation, **làm sạch mask** (fill holes, morphology).  
-- Đặc trưng gợi ý: **Hu + Fourier + ratios** (shape) / **LBP + Gabor** (texture) / **HSV hist** (color).  
-- Ghép vector (concat) → chuẩn hoá → **Top-k** và **bầu chọn theo giống** với điểm `S = w1*s_shape + w2*s_texture + w3*s_color`.  
-- **YOLO chỉ fallback** khi segmentation thất bại.
+### 3️⃣ Cấu Hình Database
 
----
+**Cập nhật `appsettings.json`:**
 
-### PA3 — Feature → PCA → Linear SVM (không retrieval)
-```mermaid
-graph LR;
-  subgraph ADMIN ["Admin - Huan luyen"]
-    D1["Anh theo thu muc giong"];
-    D2["Detect / crop hoac segmentation"];
-    D3["Trich dac trung: Shape + LBP + HSV"];
-    D4["Chuan hoa cuc bo + Concat"];
-    D5["StandardScaler (toan cuc)"];
-    D6["PCA 128-256 chieu"];
-    D7["Train Linear SVM One-vs-Rest class_weight=balanced"];
-    D8["Luu scaler.pkl + pca.pkl + svm.pkl + labels.pkl"];
-    D1 --> D2;
-    D2 --> D3;
-    D3 --> D4;
-    D4 --> D5;
-    D5 --> D6;
-    D6 --> D7;
-    D7 --> D8;
-  end;
-
-  subgraph USER ["User - Suy luan"]
-    E1["Upload anh"];
-    E2["Detect / crop hoac segmentation"];
-    E3["Trich dac trung (Shape / LBP / HSV) + Concat"];
-    E4["StandardScaler.transform"];
-    E5["PCA.transform"];
-    E6["Linear SVM predict / predict_proba"];
-    E7["Tra ket qua: Top-1 neu vuot nguong hoac Top-3"];
-    E1 --> E2;
-    E2 --> E3;
-    E3 --> E4;
-    E4 --> E5;
-    E5 --> E6;
-    E6 --> E7;
-  end;
-```
-
-**Điểm cần chốt thêm (nhỏ):**
-- Trước PCA nên có **StandardScaler** (chuẩn hoá toàn cục) và **lưu scaler + PCA** để dùng lại lúc infer.  
-- **Linear SVM (One-vs-Rest)** với `class_weight='balanced'`; có thể **calibrate** để có `confidence`.  
-- Inference: trả **Top-1** nếu vượt ngưỡng, hoặc **Top-3** nếu chưa chắc.
-
----
-
-## Chi tiết từng phương pháp
-
-### 1) PA1 — YOLOv11 + CLIP + FAISS (retrieval)
-**Luồng Admin**
-1. **Gán nhãn theo thư mục giống** (slug không dấu).  
-2. **YOLOv11(n/s)** detect `dog/cat` → **crop** (thêm lề 5–10%).  
-3. **CLIP (OpenCLIP ViT-B/32)** → **vector 512D** (L2-normalize).  
-4. **Nạp FAISS** (IndexFlatIP) + **mapping** `faiss_id → breed_id`. (Tách **dogs.index** & **cats.index**).
-
-**Luồng User**
-1. Nhận ảnh → **YOLO** detect/crop → xác định **species**.  
-2. **CLIP** → vector 512D.  
-3. **FAISS Top-k** trong index tương ứng → **quyết định** (Top-1 + ngưỡng hoặc voting theo giống).  
-4. Trả `{breed, confidence, top3[]}` (một phần tử/bbox nếu nhiều thú cưng).
-
-**Ưu/nhược**: chính xác & mở rộng tốt; phụ thuộc CLIP (GPU nhanh hơn).
-
----
-
-### 2) PA-Alt — Segmentation-first, Part-aware + k-NN (thuần thuật toán)
-**Luồng Admin**
-1. **Segmentation** (rembg/U²-Net/GrabCut) → **mask**; làm sạch mask.  
-2. **Chia phần**: đầu (1/3 trên), ngực (1/3 giữa), toàn thân (mask).  
-3. **Đặc trưng**: Shape (Hu/Fourier/ratios) + Texture (LBP/Gabor) + Color (HSV).  
-4. **Concat + chuẩn hoá** → nạp **k-NN/FAISS** + mapping.
-
-**Luồng User**
-1. Nhận ảnh → segmentation; nếu hỏng **fallback YOLO** để cắt trước.  
-2. Tính cùng loại **đặc trưng** → concat + chuẩn hoá.  
-3. **Top-k** → **bầu chọn theo giống** với trọng số từng khối → trả kết quả.
-
-**Ưu/nhược**: chạy CPU tốt, giải thích được; nhạy ánh sáng/góc, kém robust hơn deep.
-
----
-
-### 3) PA3 — Feature → PCA → Linear SVM (không retrieval)
-**Luồng Admin (train)**
-1. (Segment/crop) → **đặc trưng**: Shape + LBP + HSV → **concat**.  
-2. **StandardScaler** → **PCA** (128–256D) → **train Linear SVM (OVR)** với `class_weight='balanced'`.  
-3. (Tùy chọn) **CalibratedClassifierCV** để có `confidence`.  
-4. Lưu `scaler.pkl`, `pca.pkl`, `svm.pkl`, `labels.pkl`.
-
-**Luồng User (infer)**
-1. (Segment/crop) → tính **feature** → **scaler.transform** → **pca.transform**.  
-2. **svm.predict / predict_proba** → **Top-1** (nếu ≥ ngưỡng) hoặc **Top-3**.
-
-**Ưu/nhược**: cực gọn, không cần FAISS; nhưng kém robust nếu lớp nhiều/na ná.
-
----
-
-## API gợi ý (dùng chung ý tưởng)
-
-- `POST /api/breed/identify` → cho **PA1** hoặc **PA-Alt** (retrieval).  
-- `POST /api/breed/identify-linear` → cho **PA3** (SVM không retrieval).  
-- `POST /api/breed/index` → build index cho PA1/PA-Alt.  
-- `POST /api/breed/train-linear` → train & lưu model cho PA3.
-
-**Response mẫu (PA1/PA-Alt)**
 ```json
 {
-  "species": "dog",
-  "results": [{"breed":"Shiba Inu","confidence":0.82,
-               "top3":[{"breed":"Shiba Inu","score":0.82},
-                        {"breed":"Akita Inu","score":0.71},
-                        {"breed":"Basenji","score":0.60}]}]
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=PawVerseDB;Trusted_Connection=true;MultipleActiveResultSets=true"
+  },
+  "Jwt": {
+    "Key": "your-secret-key-here-min-32-chars",
+    "Issuer": "PawVerseAPI",
+    "Audience": "PawVerseClient",
+    "ExpiresInMinutes": 60
+  }
 }
 ```
 
-**Response mẫu (PA3)**  
+**Apply Migrations:**
+
+```bash
+# Restore packages
+dotnet restore
+
+# Apply migrations
+dotnet ef database update
+```
+
+### 4️⃣ Chạy Backend API
+
+```bash
+# Development mode
+dotnet run
+
+# Hoặc với hot reload
+dotnet watch run
+```
+
+API sẽ chạy tại: **https://localhost:7139** (hoặc http://localhost:5139)
+
+### 5️⃣ Truy Cập Swagger UI
+
+Mở browser: **https://localhost:7139**
+
+Swagger UI cung cấp:
+- API documentation đầy đủ
+- Test endpoints trực tiếp
+- Schema definitions
+
+### 6️⃣ Cài Đặt AI Features (Optional)
+
+**Setup Python Environment:**
+
+```bash
+cd Python
+
+# Tạo virtual environment
+python -m venv venv
+
+# Activate (Windows)
+venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+**Download AI Models:**
+
+```bash
+# YOLOv8 (breed detection)
+python breed_detection.py  # Auto-download on first run
+
+# Hugging Face models (chatbot)
+# Models download tự động khi API call lần đầu
+```
+
+## 🔐 Authentication
+
+### Đăng Ký & Đăng Nhập
+
+```http
+POST /api/auth/register
+POST /api/auth/login
+```
+
+### Sử dụng JWT Token
+
+```http
+Authorization: Bearer {your-jwt-token}
+```
+
+### OAuth (Google/GitHub)
+
+Configure trong `appsettings.json`:
+
 ```json
 {
-  "results": [
-    {"breed":"Shiba Inu","confidence":0.82},
-    {"breed":"Akita Inu","confidence":0.63},
-    {"breed":"Basenji","confidence":0.55}
-  ]
+  "Authentication": {
+    "Google": {
+      "ClientId": "your-google-client-id",
+      "ClientSecret": "your-google-client-secret"
+    },
+    "GitHub": {
+      "ClientId": "your-github-client-id",
+      "ClientSecret": "your-github-client-secret"
+    }
+  }
 }
 ```
 
+## 📚 API Endpoints
+
+### Products
+- `GET /api/products` - Danh sách sản phẩm
+- `GET /api/products/{id}` - Chi tiết sản phẩm
+- `GET /api/products/search?keyword={keyword}` - Tìm kiếm
+
+### Cart
+- `GET /api/cart` - Xem giỏ hàng
+- `POST /api/cart` - Thêm sản phẩm
+- `PUT /api/cart/{id}` - Cập nhật số lượng
+- `DELETE /api/cart/{id}` - Xóa sản phẩm
+
+### Orders
+- `POST /api/orders` - Đặt hàng
+- `GET /api/orders` - Lịch sử đơn hàng
+- `GET /api/orders/{id}` - Chi tiết đơn hàng
+- `PUT /api/orders/{id}/cancel` - Hủy đơn hàng
+
+### AI Features
+- `POST /api/breed-detection` - Nhận diện giống (upload ảnh)
+- `POST /api/chatbot/send-message` - Chat với AI
+
+### Admin
+- `GET /api/admin/statistics` - Thống kê tổng quan
+- `GET /api/admin/orders` - Quản lý đơn hàng
+- `PUT /api/admin/orders/{id}/status` - Cập nhật trạng thái
+
+## 🧪 Testing
+
+```bash
+# Run tests
+dotnet test
+
+# Test API với Swagger UI
+# https://localhost:7139
+```
+
+## 📝 Seed Data
+
+Database được seed tự động với:
+- **Sample products**: ~50 sản phẩm
+- **Categories**: Thức ăn, đồ chơi, phụ kiện, chăm sóc
+- **Brands**: Royal Canin, Whiskas, Pedigree, etc.
+
+## 🐛 Troubleshooting
+
+### Database Connection Error
+```bash
+# Kiểm tra connection string
+# Đảm bảo SQL Server đang chạy
+# Chạy lại migrations
+dotnet ef database update
+```
+
+### Port Already in Use
+```bash
+# Thay đổi port trong Properties/launchSettings.json
+```
+
+### AI Models Not Loading
+```bash
+# Kiểm tra Python environment
+python --version  # >= 3.11
+
+# Reinstall dependencies
+pip install -r Python/requirements.txt
+```
+
+## 📄 License
+
+This project is for educational purposes.
+
+## 👥 Contributors
+
+- Backend API: .NET 8, Entity Framework Core
+- AI Features: YOLOv8, Transformers, Stable Diffusion
+- Mobile App: Flutter (separate repo)
+- Web Frontend: React (separate repo)
+
+## 🔗 Related Repositories
+
+- **Mobile App**: PawVerseMobile (Flutter), PawVerseFrontend (React)
+https://drive.google.com/drive/folders/1P5wuWVVmG-dcCUO_Ujkx1krAudrAaTJ9?usp=sharing
+- **AI Try-On Demo**: Kaggle Notebook (Python/notebooks/)
+https://www.kaggle.com/code/farolnguyen1/dacn-task-2-streamlit-demo
+
 ---
 
-## Đánh giá & chỉnh tham số
-- **Top-1/Top-3 accuracy**, **confusion matrix**, **thời gian suy luận**.  
-- Chọn **ngưỡng** theo log (vd 0.70–0.80).  
-- Với PA-Alt: **grid-search** trọng số `w_shape, w_texture, w_color` và hệ số `α` trong `s_i = exp(-α d_i)`.
-
----
-
-## Ghi chú nhỏ để tránh lỗi phổ biến
-- Ảnh nhiều thú cưng ⇒ trả mảng `results[]`, mỗi phần tử gắn `bbox`/`mask`.  
-- Luôn **L2-normalize** vector trước khi cosine/inner-product.  
-- Tách **index dogs/cats** để tăng tốc & độ chính xác.  
-- Lưu **mapping** đầy đủ để FAISS id → breed name.  
-- Với PA3, nhớ **dùng đúng scaler & PCA** đã fit khi chạy infer.
-
----
+**Built with ❤️ for pets and their owners** 🐕🐈
